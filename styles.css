@@ -1,216 +1,193 @@
-document.getElementById('flyerBg').src = 'fondo.png'; // Asegúrate que 'fondo.png' esté en la carpeta correcta
-
-const CSV_PARTIDOS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1362473459&single=true&output=csv';
-const CSV_EQUIPOS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1894947293&single=true&output=csv';
-
-let todosPartidos = [], todosEquipos = [];
-
-function parseCSV(text) {
-  const lines = text.trim().split('\n');
-  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
-  return lines.slice(1).map(line => {
-    const vals = [];
-    let cur = '', inQuotes = false;
-    for (let ch of line) {
-      if (ch === '"') inQuotes = !inQuotes;
-      else if (ch === ',' && !inQuotes) { vals.push(cur.trim()); cur = ''; }
-      else cur += ch;
-    }
-    vals.push(cur.trim());
-    const obj = {};
-    headers.forEach((h, i) => obj[h] = (vals[i] || '').replace(/^"|"$/g, ''));
-    return obj;
-  });
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: #0a0a0a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  font-family: 'Bebas Neue', sans-serif;
 }
 
-function formatHora(t) {
-  if (!t) return '';
-  const parts = t.split(':');
-  let h = parseInt(parts[0]);
-  const m = parts[1] || '00';
-  const ampm = h >= 12 ? 'PM' : 'AM';
-  h = h % 12 || 12;
-  return `${h}:${m} ${ampm}`;
+/* ===== EDITOR ===== */
+.editor-panel {
+  background: rgba(0,0,0,0.88);
+  border: 1px solid #3a6b1a;
+  border-radius: 12px;
+  padding: 18px 22px;
+  margin-bottom: 22px;
+  width: 100%;
+  max-width: 900px;
+}
+.editor-panel h3 { color: #b8f030; font-size: 17px; letter-spacing: 3px; margin-bottom: 12px; text-transform: uppercase; }
+.controls-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; align-items: end; }
+.field-group { display: flex; flex-direction: column; gap: 4px; }
+.field-group label { color: #88aa44; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
+.field-group input, .field-group select {
+  background: rgba(255,255,255,0.07); border: 1px solid #3a6b1a; border-radius: 6px;
+  color: #fff; font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 1px;
+  padding: 6px 10px; outline: none;
+}
+.field-group select option { background: #111; color: #fff; }
+.load-btn {
+  background: linear-gradient(135deg, #3a6b1a, #7ddf00); border: none; border-radius: 8px;
+  color: #fff; cursor: pointer; font-family: 'Bebas Neue', sans-serif; font-size: 15px;
+  letter-spacing: 3px; padding: 10px 16px; text-transform: uppercase; width: 100%;
+}
+.status-msg { color: #88cc22; font-size: 13px; letter-spacing: 2px; margin-top: 8px; min-height: 20px; text-align: center; }
+.dl-btn {
+  background: linear-gradient(135deg, #7ddf00, #d4f030); border: none; border-radius: 8px;
+  color: #000; cursor: pointer; font-family: 'Bebas Neue', sans-serif; font-size: 17px;
+  letter-spacing: 3px; padding: 12px 20px; text-transform: uppercase; width: 100%; margin-top: 10px;
 }
 
-function phSVG() {
-  return `<svg style="width:36px;height:36px;opacity:0.22;" viewBox="0 0 60 60"><circle cx="30" cy="22" r="12" fill="white" opacity="0.4"/><path d="M10 54c0-11 9-18 20-18s20 7 20 18" fill="white" opacity="0.4"/></svg>`;
+/* ===== FLYER ===== */
+.flyer-wrapper {
+  position: relative;
+  width: 900px;
+  height: 1270px;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 0 60px rgba(0,0,0,0.95);
+}
+.flyer-bg {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; object-position: center top; z-index: 0;
+}
+.overlay-main {
+  position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.0) 0%, rgba(0,0,0,0.1) 15%, rgba(0,0,0,0.55) 25%, rgba(0,0,0,0.60) 85%, rgba(0,0,0,0.1) 100%);
 }
 
-function cambiarFiltro() {
-  const tipo = document.getElementById('filterTipo').value;
-  document.getElementById('groupJornada').style.display = tipo === 'jornada' ? 'flex' : 'none';
-  document.getElementById('groupFecha').style.display = tipo === 'fecha' ? 'flex' : 'none';
-  document.getElementById('groupEquipo').style.display = tipo === 'equipo' ? 'flex' : 'none';
-
-  document.getElementById('statusMsg').textContent = 'Selecciona opción y presiona Cargar Datos';
-  document.getElementById('encFlyer').innerHTML = '';
-  document.getElementById('jornadaDisplay').textContent = 'DOMINICAL';
+/* ===== JORNADA TITLE ===== */
+.liga-banner {
+  position: absolute; top: 195px; left: 50%; transform: translateX(-50%);
+  z-index: 10; width: 860px; text-align: center;
+}
+.jornada-title {
+  font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 6px;
+  color: #c8f020; text-shadow: 0 0 20px rgba(100,200,0,0.4), 0 2px 8px rgba(0,0,0,0.95);
+  text-transform: uppercase;
 }
 
-async function cargarFechasYEquipos() {
-  try {
-    const [resP, resE] = await Promise.all([fetch(CSV_PARTIDOS), fetch(CSV_EQUIPOS)]);
-    todosPartidos = parseCSV(await resP.text());
-    todosEquipos = parseCSV(await resE.text());
-
-    const fechas = [...new Set(todosPartidos.filter(p => p['Fecha'] && p['Fecha'].trim() !== '').map(p => p['Fecha'].trim()))];
-    const selFecha = document.getElementById('filterFecha');
-    selFecha.innerHTML = '<option value="">— Selecciona una fecha —</option>';
-    fechas.forEach(f => selFecha.innerHTML += `<option value="${f}">${f}</option>`);
-
-    const equiposSet = new Set();
-    todosEquipos.forEach(e => { if (e['Nombre']) equiposSet.add(e['Nombre'].toUpperCase()); });
-    const selEquipo = document.getElementById('filterEquipo');
-    selEquipo.innerHTML = '<option value="">— Selecciona un equipo —</option>';
-    Array.from(equiposSet).sort().forEach(eq => selEquipo.innerHTML += `<option value="${eq}">${eq}</option>`);
-
-    document.getElementById('statusMsg').textContent = 'Selecciona filtro y presiona Cargar Datos';
-  } catch (e) {
-    document.getElementById('statusMsg').textContent = '❌ Error: ' + e.message;
-  }
+/* ===== ENCOUNTERS ===== */
+.encounters-container {
+  position: absolute; top: 240px; left: 50%; transform: translateX(-50%);
+  width: 860px; z-index: 10; display: flex; flex-direction: column; gap: 10px;
 }
 
-async function cargarDatos() {
-  const tipo = document.getElementById('filterTipo').value;
-  const statusEl = document.getElementById('statusMsg');
-  statusEl.textContent = '⏳ Cargando datos...';
-
-  try {
-    let filtrados = [];
-    if (tipo === 'jornada') {
-      const jornada = document.getElementById('filterJornada').value;
-      if (!jornada) { statusEl.textContent = '⚠️ Selecciona una jornada'; return; }
-      filtrados = todosPartidos.filter(p => String(p['Jornada']).trim() === String(jornada));
-      if (!filtrados.length) { statusEl.textContent = `⚠️ No hay partidos para Jornada ${jornada}`; return; }
-      document.getElementById('jornadaDisplay').textContent = `DOMINICAL — JORNADA ${jornada}`;
-    } else if (tipo === 'fecha') {
-      const fecha = document.getElementById('filterFecha').value;
-      if (!fecha) { statusEl.textContent = '⚠️ Selecciona una fecha'; return; }
-      filtrados = todosPartidos.filter(p => p['Fecha'].trim() === fecha);
-      if (!filtrados.length) { statusEl.textContent = `⚠️ No hay partidos para el ${fecha}`; return; }
-      document.getElementById('jornadaDisplay').textContent = `DOMINICAL — ${fecha}`;
-    } else if (tipo === 'equipo') {
-      const equipoSel = document.getElementById('filterEquipo').value.trim().toUpperCase();
-      if (!equipoSel) {
-        statusEl.textContent = '⚠️ Selecciona un equipo';
-        return;
-      }
-      filtrados = todosPartidos.filter(p => {
-        const eqLocal = (todosEquipos.find(e => String(e.ID_Equipo) === String(p.Equipo_Local))?.Nombre || '').toUpperCase();
-        const eqVisita = (todosEquipos.find(e => String(e.ID_Equipo) === String(p.Equipo_Visita))?.Nombre || '').toUpperCase();
-        return eqLocal === equipoSel || eqVisita === equipoSel;
-      });
-      if (!filtrados.length) {
-        statusEl.textContent = `⚠️ No hay partidos para el equipo ${equipoSel}`;
-        return;
-      }
-      document.getElementById('jornadaDisplay').textContent = `DOMINICAL — EQUIPO ${equipoSel}`;
-    } else {
-      statusEl.textContent = '⚠️ Selecciona un tipo de filtro';
-      return;
-    }
-
-    const eqMap = {};
-    todosEquipos.forEach(e => { eqMap[String(e['ID_Equipo']).trim()] = e; });
-
-    const cont = document.getElementById('encFlyer');
-    cont.innerHTML = '';
-
-    filtrados.forEach(p => {
-      const eqL = eqMap[String(p['Equipo_Local']).trim()] || {};
-      const eqV = eqMap[String(p['Equipo_Visita']).trim()] || {};
-      const nomL = (eqL['Nombre'] || `Equipo ${p['Equipo_Local']}`).toUpperCase();
-      const nomV = (eqV['Nombre'] || `Equipo ${p['Equipo_Visita']}`).toUpperCase();
-      const urlL = eqL['URL'] || '';
-      const urlV = eqV['URL'] || '';
-      const logoL = urlL ? `<img src="${urlL}" onerror="this.style.display='none'" style="width:100%;height:100%;object-fit:cover;">` : phSVG();
-      const logoV = urlV ? `<img src="${urlV}" onerror="this.style.display='none'" style="width:100%;height:100%;object-fit:cover;">` : phSVG();
-      const gL = p['Goles_Local'] !== '' ? p['Goles_Local'] : '-';
-      const gV = p['Goles_Visita'] !== '' ? p['Goles_Visita'] : '-';
-      const ganPor = (p['Ganado_Por'] || '').trim().toUpperCase();
-      const hora = formatHora(p['Hora']);
-      const jornada = p['Jornada'] ? `Jornada ${p['Jornada']}` : '';
-      const cancha2 = p['Cancha'] || '';
-      const fecha2 = p['Fecha'] || '';
-
-      cont.innerHTML += `
-      <div class="enc-row">
-        <div class="teams-section">
-          <div class="team-block">
-            <div class="team-logo-sm">${logoL}</div>
-            <div class="team-name-sm">${nomL}</div>
-          </div>
-          <div class="score-block">
-            <div class="score-nums">${gL} - ${gV}</div>
-            ${ganPor ? `<div class="ganado-badge">${ganPor}</div>` : ''}
-          </div>
-          <div class="team-block">
-            <div class="team-logo-sm">${logoV}</div>
-            <div class="team-name-sm">${nomV}</div>
-          </div>
-        </div>
-        <div class="enc-divider-v"></div>
-        <div class="info-section">
-          ${jornada ? `<div class="info-item"><span class="icon">🏆</span><span class="val">${jornada}</span></div>` : ''}
-          ${cancha2 ? `<div class="info-item"><span class="icon">📍</span><span class="val">${cancha2}</span></div>` : ''}
-          ${fecha2 ? `<div class="info-item"><span class="icon">📅</span><span class="val">${fecha2}</span></div>` : ''}
-          ${hora ? `<div class="info-item"><span class="icon">⏰</span><span class="val">${hora}</span></div>` : ''}
-        </div>
-      </div>`;
-    });
-
-    statusEl.textContent = `✅ ${filtrados.length} partido(s) cargado(s)`;
-  } catch (e) {
-    statusEl.textContent = '❌ Error: ' + e.message;
-  }
+.enc-row {
+  display: flex;
+  align-items: center;
+  background: rgba(0,0,0,0.75);
+  border: 1px solid rgba(184,240,48,0.2);
+  border-radius: 10px;
+  padding: 12px 16px;
+  gap: 12px;
 }
 
-async function downloadPNG() {
-  const btn = document.getElementById('dlBtn');
-  const panel = document.querySelector('.editor-panel');
-  panel.style.display = 'none';
-  btn.textContent = '⏳ Generando...';
-  btn.disabled = true;
-
-  const imgs = document.getElementById('flyerRoot').querySelectorAll('img');
-  await Promise.all(Array.from(imgs).map(img => new Promise(resolve => {
-    if (img.complete) resolve();
-    else { img.onload = resolve; img.onerror = resolve; }
-  })));
-
-  await new Promise(r => setTimeout(r, 800));
-
-  try {
-    const canvas = await html2canvas(document.getElementById('flyerRoot'), {
-      useCORS: true,
-      allowTaint: true,
-      scale: 2,
-      width: 900,
-      height: 1270,
-      backgroundColor: '#000',
-      imageTimeout: 20000,
-      logging: false
-    });
-
-    canvas.toBlob(blob => {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'dominical.png';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 'image/png');
-
-  } catch(e) {
-    alert('❌ Error: ' + e.message);
-  }
-
-  panel.style.display = 'block';
-  btn.textContent = '⬇ Descargar Flyer como PNG';
-  btn.disabled = false;
+.teams-section {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
 }
 
-window.addEventListener('DOMContentLoaded', cargarFechasYEquipos);
+.team-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 110px;
+}
+
+.team-logo-sm {
+  width: 70px;
+  height: 70px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(184,240,48,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.team-logo-sm img { width:100%; height:100%; object-fit:cover; display:block; }
+
+.team-name-sm {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 15px;
+  letter-spacing: 1px;
+  color: #fff;
+  text-align: center;
+  text-transform: uppercase;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+  line-height: 1.1;
+}
+
+.score-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 80px;
+}
+
+.score-nums {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 38px;
+  color: #d4f030;
+  text-shadow: 0 0 12px rgba(120,220,0,0.5);
+  letter-spacing: 2px;
+  line-height: 1;
+}
+
+.ganado-badge {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: #ffb400;
+  text-transform: uppercase;
+}
+
+.enc-divider-v {
+  width: 2px;
+  height: 80px;
+  background: linear-gradient(to bottom, transparent, rgba(184,240,48,0.4), transparent);
+  flex-shrink: 0;
+}
+
+.info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 160px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 13px;
+  color: #ccc;
+}
+
+.info-item span.icon { font-size: 14px; }
+.info-item span.val { font-weight: 700; color: #fff; }
+
+.footer-info {
+  position: absolute; bottom: 245px; left: 22px; right: 22px;
+  z-index: 10; display: flex; flex-direction: row;
+  align-items: flex-end; justify-content: space-between;
+}
+.footer-left { display: flex; flex-direction: row; align-items: flex-end; gap: 32px; }
+.footer-item { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+.footer-label { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 4px; color: #88cc22; text-transform: uppercase; }
+.footer-value { font-family: 'Bebas Neue', sans-serif; font-size: 34px; letter-spacing: 4px; color: #fff; text-shadow: 0 2px 14px rgba(0,0,0,0.95); text-transform: uppercase; }
+.footer-value.green { color: #c8f020; font-size: 30px; }
+
+@media print {
+  .editor-panel { display: none !important; }
+  body { background: #000; padding: 0; }
+}
