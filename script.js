@@ -55,13 +55,11 @@ async function cargarFechasYEquipos() {
     todosPartidos = parseCSV(await resP.text());
     todosEquipos = parseCSV(await resE.text());
 
-    // Cargar fechas para selector de fecha
     const fechas = [...new Set(todosPartidos.filter(p => p['Fecha'] && p['Fecha'].trim() !== '').map(p => p['Fecha'].trim()))];
     const selFecha = document.getElementById('filterFecha');
     selFecha.innerHTML = '<option value="">— Selecciona una fecha —</option>';
     fechas.forEach(f => selFecha.innerHTML += `<option value="${f}">${f}</option>`);
 
-    // Cargar equipos para selector de equipo (nombres en mayúsculas ordenados)
     const equiposSet = new Set();
     todosEquipos.forEach(e => {
       if (e['Nombre']) equiposSet.add(e['Nombre'].toUpperCase());
@@ -71,7 +69,9 @@ async function cargarFechasYEquipos() {
     Array.from(equiposSet).sort().forEach(eq => selEquipo.innerHTML += `<option value="${eq}">${eq}</option>`);
 
     document.getElementById('statusMsg').textContent = 'Selecciona filtro y presiona Cargar Datos';
+    
   } catch(e) {
+    console.error(e);
     document.getElementById('statusMsg').textContent = '❌ Error: ' + e.message;
   }
 }
@@ -112,7 +112,7 @@ async function cargarDatos() {
       statusEl.textContent = '⚠️ Selecciona un tipo de filtro';
       return;
     }
-    
+
     const eqMap = {};
     todosEquipos.forEach(e => { eqMap[String(e['ID_Equipo']).trim()] = e; });
 
@@ -168,9 +168,10 @@ async function cargarDatos() {
       </div>`;
     });
 
-    statusEl.textContent = `✅ ${filtrados.length} partido(s) cargado(s)`;
+    statusEl.textContent = `✅ ${filtrados.length partido(s) cargado(s)`;
 
   } catch(e) {
+    console.error(e);
     statusEl.textContent = '❌ Error: ' + e.message;
   }
 }
@@ -198,10 +199,4 @@ async function downloadPNG() {
       document.body.appendChild(a); a.click();
       document.body.removeChild(a); URL.revokeObjectURL(url);
     }, 'image/png');
-  } catch(e) { alert('❌ Error: ' + e.message); }
-  panel.style.display = 'block';
-  btn.textContent = '⬇ Descargar Flyer como PNG';
-  btn.disabled = false;
-}
-
-cargarFechasYEquipos();
+  } catch(e) { alert('❌ Error:
