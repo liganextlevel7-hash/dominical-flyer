@@ -1,3 +1,5 @@
+// Igual que la versión que sabías que funciona, sin fondo base64 ni modulos extra
+
 document.getElementById('flyerBg').src = '';
 
 const CSV_PARTIDOS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1362473459&single=true&output=csv';
@@ -113,13 +115,6 @@ async function cargarDatos() {
     const eqMap = {};
     todosEquipos.forEach(e => { eqMap[String(e['ID_Equipo']).trim()] = e; });
 
-    const cancha = filtrados[0]['Cancha'] || 'NEXT LEVEL 7';
-    const fecha = filtrados[0]['Fecha'] || '—';
-
-    // Opcional: puedes quitar las líneas si no quieres mostrar estos datos en el pie, o comentarlas
-    // document.getElementById('canchaDisplay').textContent = cancha.toUpperCase();
-    // document.getElementById('fechaDisplay').textContent = fecha;
-
     const cont = document.getElementById('encFlyer');
     cont.innerHTML = '';
 
@@ -141,30 +136,29 @@ async function cargarDatos() {
       const fecha2 = p['Fecha'] || '';
 
       cont.innerHTML += `
-        <div class="enc-row">
-          <div class="teams-section">
-            <div class="team-block">
-              <div class="team-logo-sm">${logoL}</div>
-              <div class="team-name-sm">${nomL}</div>
-            </div>
-            <div class="score-block">
-              <div class="score-nums">${gL} - ${gV}</div>
-              ${ganPor ? `<div class="ganado-badge">${ganPor}</div>` : ''}
-            </div>
-            <div class="team-block">
-              <div class="team-logo-sm">${logoV}</div>
-              <div class="team-name-sm">${nomV}</div>
-            </div>
+      <div class="enc-row">
+        <div class="teams-section">
+          <div class="team-block">
+            <div class="team-logo-sm">${logoL}</div>
+            <div class="team-name-sm">${nomL}</div>
           </div>
-          <div class="enc-divider-v"></div>
-          <div class="info-section">
-            ${jornada ? `<div class="info-item"><span class="icon">🏆</span><span class="val">${jornada}</span></div>` : ''}
-            ${cancha2 ? `<div class="info-item"><span class="icon">📍</span><span class="val">${cancha2}</span></div>` : ''}
-            ${fecha2 ? `<div class="info-item"><span class="icon">📅</span><span class="val">${fecha2}</span></div>` : ''}
-            ${hora ? `<div class="info-item"><span class="icon">⏰</span><span class="val">${hora}</span></div>` : ''}
+          <div class="score-block">
+            <div class="score-nums">${gL} - ${gV}</div>
+            ${ganPor ? `<div class="ganado-badge">${ganPor}</div>` : ''}
+          </div>
+          <div class="team-block">
+            <div class="team-logo-sm">${logoV}</div>
+            <div class="team-name-sm">${nomV}</div>
           </div>
         </div>
-      `;
+        <div class="enc-divider-v"></div>
+        <div class="info-section">
+          ${jornada ? `<div class="info-item"><span class="icon">🏆</span><span class="val">${jornada}</span></div>` : ''}
+          ${cancha2 ? `<div class="info-item"><span class="icon">📍</span><span class="val">${cancha2}</span></div>` : ''}
+          ${fecha2 ? `<div class="info-item"><span class="icon">📅</span><span class="val">${fecha2}</span></div>` : ''}
+          ${hora ? `<div class="info-item"><span class="icon">⏰</span><span class="val">${hora}</span></div>` : ''}
+        </div>
+      </div>`;
     });
 
     statusEl.textContent = `✅ ${filtrados.length} partido(s) cargado(s)`;
