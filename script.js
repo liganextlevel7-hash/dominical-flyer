@@ -1,8 +1,7 @@
-// No se asigna imagen base64, puedes poner src vacío o URL normal si quieres
 document.getElementById('flyerBg').src = '';
 
 const CSV_PARTIDOS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1362473459&single=true&output=csv';
-const CSV_EQUIPOS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1894947293&single=true&output=csv';
+const CSV_EQUIPOS  = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1894947293&single=true&output=csv';
 
 let todosPartidos = [], todosEquipos = [];
 
@@ -43,7 +42,6 @@ function cambiarFiltro() {
   document.getElementById('groupFecha').style.display = tipo === 'fecha' ? 'flex' : 'none';
   document.getElementById('groupEquipo').style.display = tipo === 'equipo' ? 'flex' : 'none';
 
-  // Limpia mensaje y contendores para evitar confusiones
   document.getElementById('statusMsg').textContent = 'Selecciona opción y presiona Cargar Datos';
   document.getElementById('encFlyer').innerHTML = '';
   document.getElementById('jornadaDisplay').textContent = 'DOMINICAL';
@@ -58,19 +56,19 @@ async function cargarFechasYEquipos() {
     todosEquipos = parseCSV(await resE.text());
 
     // Cargar fechas para selector de fecha
-    const fechas = [...new Set(todosPartidos.filter(p=>p['Fecha'] && p['Fecha'].trim() !== '').map(p=>p['Fecha'].trim()))];
+    const fechas = [...new Set(todosPartidos.filter(p => p['Fecha'] && p['Fecha'].trim() !== '').map(p => p['Fecha'].trim()))];
     const selFecha = document.getElementById('filterFecha');
     selFecha.innerHTML = '<option value="">— Selecciona una fecha —</option>';
     fechas.forEach(f => selFecha.innerHTML += `<option value="${f}">${f}</option>`);
 
-    // Cargar equipos para selector de equipo
+    // Cargar equipos para selector de equipo (nombres en mayúsculas ordenados)
     const equiposSet = new Set();
     todosEquipos.forEach(e => {
-      if(e['Nombre']) equiposSet.add(e['Nombre'].toUpperCase());
+      if (e['Nombre']) equiposSet.add(e['Nombre'].toUpperCase());
     });
     const selEquipo = document.getElementById('filterEquipo');
     selEquipo.innerHTML = '<option value="">— Selecciona un equipo —</option>';
-    Array.from(equiposSet).sort().forEach(eq=>selEquipo.innerHTML += `<option value="${eq}">${eq}</option>`);
+    Array.from(equiposSet).sort().forEach(eq => selEquipo.innerHTML += `<option value="${eq}">${eq}</option>`);
 
     document.getElementById('statusMsg').textContent = 'Selecciona filtro y presiona Cargar Datos';
   } catch(e) {
@@ -99,7 +97,10 @@ async function cargarDatos() {
       document.getElementById('jornadaDisplay').textContent = `DOMINICAL — ${fecha}`;
     } else if (tipo === 'equipo') {
       const equipoSel = document.getElementById('filterEquipo').value.trim().toUpperCase();
-      if (!equipoSel) { statusEl.textContent = '⚠️ Selecciona un equipo'; return; }
+      if (!equipoSel) { 
+        statusEl.textContent = '⚠️ Selecciona un equipo'; 
+        return; 
+      }
       filtrados = todosPartidos.filter(p => {
         const eqLocal = (todosEquipos.find(e => String(e.ID_Equipo) === String(p.Equipo_Local))?.Nombre || '').toUpperCase();
         const eqVisita = (todosEquipos.find(e => String(e.ID_Equipo) === String(p.Equipo_Visita))?.Nombre || '').toUpperCase();
@@ -116,7 +117,6 @@ async function cargarDatos() {
     const eqMap = {};
     todosEquipos.forEach(e => { eqMap[String(e['ID_Equipo']).trim()] = e; });
 
-    // Para cancha y fecha tomamos del primer partido filtrado
     const cancha = filtrados[0]['Cancha'] || 'NEXT LEVEL 7';
     const fecha = filtrados[0]['Fecha'] || '—';
 
@@ -205,5 +205,4 @@ async function downloadPNG() {
   btn.disabled = false;
 }
 
-// Carga datos iniciales de fechas y equipos para selectores
 cargarFechasYEquipos();
