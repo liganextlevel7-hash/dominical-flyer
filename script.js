@@ -1,4 +1,5 @@
-document.getElementById('flyerBg').src = 'fondo.png'; // asigna el fondo aquí
+// Sin imagen base64 para fondo
+document.getElementById('flyerBg').src = '';
 
 const CSV_PARTIDOS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1362473459&single=true&output=csv';
 const CSV_EQUIPOS  = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1894947293&single=true&output=csv';
@@ -38,13 +39,15 @@ function phSVG() {
 
 function cambiarFiltro() {
   const tipo = document.getElementById('filterTipo').value;
-  document.getElementById('groupJornada').style.display = tipo==='jornada' ? 'flex' : 'none';
-  document.getElementById('groupFecha').style.display = tipo==='fecha' ? 'flex' : 'none';
-  document.getElementById('groupEquipo').style.display = tipo==='equipo' ? 'flex' : 'none';
+  document.getElementById('groupJornada').style.display = tipo === 'jornada' ? 'flex' : 'none';
+  document.getElementById('groupFecha').style.display = tipo === 'fecha' ? 'flex' : 'none';
+  document.getElementById('groupEquipo').style.display = tipo === 'equipo' ? 'flex' : 'none';
 
   document.getElementById('statusMsg').textContent = 'Selecciona opción y presiona Cargar Datos';
   document.getElementById('encFlyer').innerHTML = '';
   document.getElementById('jornadaDisplay').textContent = 'DOMINICAL';
+  document.getElementById('canchaDisplay').textContent = 'NEXT LEVEL 7';
+  document.getElementById('fechaDisplay').textContent = '—';
 }
 
 async function cargarFechasYEquipos() {
@@ -53,20 +56,24 @@ async function cargarFechasYEquipos() {
     todosPartidos = parseCSV(await resP.text());
     todosEquipos = parseCSV(await resE.text());
 
+    // Cargar fechas para selector de fecha
     const fechas = [...new Set(todosPartidos.filter(p => p['Fecha'] && p['Fecha'].trim() !== '').map(p => p['Fecha'].trim()))];
     const selFecha = document.getElementById('filterFecha');
     selFecha.innerHTML = '<option value="">— Selecciona una fecha —</option>';
     fechas.forEach(f => selFecha.innerHTML += `<option value="${f}">${f}</option>`);
 
+    // Cargar equipos para selector de equipo (nombres en mayúsculas ordenados)
     const equiposSet = new Set();
-    todosEquipos.forEach(e => { if (e['Nombre']) equiposSet.add(e['Nombre'].toUpperCase()); });
+    todosEquipos.forEach(e => {
+      if (e['Nombre']) equiposSet.add(e['Nombre'].toUpperCase());
+    });
     const selEquipo = document.getElementById('filterEquipo');
     selEquipo.innerHTML = '<option value="">— Selecciona un equipo —</option>';
     Array.from(equiposSet).sort().forEach(eq => selEquipo.innerHTML += `<option value="${eq}">${eq}</option>`);
 
     document.getElementById('statusMsg').textContent = 'Selecciona filtro y presiona Cargar Datos';
   } catch(e) {
-    document.getElementById('statusMsg').textContent = '❌ Error: '+ e.message;
+    document.getElementById('statusMsg').textContent = '❌ Error: ' + e.message;
   }
 }
 
@@ -77,55 +84,65 @@ async function cargarDatos() {
 
   try {
     let filtrados = [];
-    if(tipo === 'jornada'){
+    if (tipo === 'jornada') {
       const jornada = document.getElementById('filterJornada').value;
-      if(!jornada){ statusEl.textContent = '⚠️ Selecciona una jornada'; return; }
-      filtrados = todosPartidos.filter(p => p.Jornada?.trim() === jornada);
-      if(!filtrados.length){ statusEl.textContent = `⚠️ No hay partidos para Jornada ${jornada}`; return; }
+      if (!jornada) { statusEl.textContent = '⚠️ Selecciona una jornada'; return; }
+      filtrados = todosPartidos.filter(p => String(p['Jornada']).trim() === String(jornada));
+      if (!filtrados.length) { statusEl.textContent = `⚠️ No hay partidos para Jornada ${jornada}`; return; }
       document.getElementById('jornadaDisplay').textContent = `DOMINICAL — JORNADA ${jornada}`;
-    } else if(tipo === 'fecha'){
+    } else if (tipo === 'fecha') {
       const fecha = document.getElementById('filterFecha').value;
-      if(!fecha){ statusEl.textContent = '⚠️ Selecciona una fecha'; return; }
-      filtrados = todosPartidos.filter(p => p.Fecha?.trim() === fecha);
-      if(!filtrados.length){ statusEl.textContent = `⚠️ No hay partidos para el ${fecha}`; return;}
+      if (!fecha) { statusEl.textContent = '⚠️ Selecciona una fecha'; return; }
+      filtrados = todosPartidos.filter(p => p['Fecha'].trim() === fecha);
+      if (!filtrados.length) { statusEl.textContent = `⚠️ No hay partidos para el ${fecha}`; return; }
       document.getElementById('jornadaDisplay').textContent = `DOMINICAL — ${fecha}`;
-    } else if(tipo === 'equipo'){
+    } else if (tipo === 'equipo') {
       const equipoSel = document.getElementById('filterEquipo').value.trim().toUpperCase();
-      if(!equipoSel){ statusEl.textContent = '⚠️ Selecciona un equipo'; return; }
+      if (!equipoSel) { 
+        statusEl.textContent = '⚠️ Selecciona un equipo'; 
+        return; 
+      }
       filtrados = todosPartidos.filter(p => {
-        const eqL = (todosEquipos.find(e => e.ID_Equipo?.trim() === p.Equipo_Local?.trim())?.Nombre || '').toUpperCase();
-        const eqV = (todosEquipos.find(e => e.ID_Equipo?.trim() === p.Equipo_Visita?.trim())?.Nombre || '').toUpperCase();
-        return eqL === equipoSel || eqV === equipoSel;
+        const eqLocal = (todosEquipos.find(e => String(e.ID_Equipo) === String(p.Equipo_Local))?.Nombre || '').toUpperCase();
+        const eqVisita = (todosEquipos.find(e => String(e.ID_Equipo) === String(p.Equipo_Visita))?.Nombre || '').toUpperCase();
+        return eqLocal === equipoSel || eqVisita === equipoSel;
       });
-      if(!filtrados.length){ statusEl.textContent = `⚠️ No hay partidos para el equipo ${equipoSel}`; return; }
+      if (!filtrados.length) { statusEl.textContent = `⚠️ No hay partidos para el equipo ${equipoSel}`; return; }
       document.getElementById('jornadaDisplay').textContent = `DOMINICAL — EQUIPO ${equipoSel}`;
     } else {
-      statusEl.textContent = '⚠️ Selecciona un filtro válido';
+      statusEl.textContent = '⚠️ Selecciona un tipo de filtro';
       return;
     }
 
+    // Mostrar datos
     const eqMap = {};
-    todosEquipos.forEach(e => { if(e.ID_Equipo) eqMap[e.ID_Equipo.trim()] = e; });
+    todosEquipos.forEach(e => { eqMap[String(e['ID_Equipo']).trim()] = e; });
+
+    const cancha = filtrados[0]['Cancha'] || 'NEXT LEVEL 7';
+    const fecha = filtrados[0]['Fecha'] || '—';
+
+    document.getElementById('canchaDisplay').textContent = cancha.toUpperCase();
+    document.getElementById('fechaDisplay').textContent = fecha;
 
     const cont = document.getElementById('encFlyer');
     cont.innerHTML = '';
 
     filtrados.forEach(p => {
-      const eqL = eqMap[p.Equipo_Local?.trim()] || {};
-      const eqV = eqMap[p.Equipo_Visita?.trim()] || {};
-      const nomL = (eqL.Nombre || `Equipo ${p.Equipo_Local}`).toUpperCase();
-      const nomV = (eqV.Nombre || `Equipo ${p.Equipo_Visita}`).toUpperCase();
-      const urlL = eqL.URL || '';
-      const urlV = eqV.URL || '';
+      const eqL = eqMap[String(p['Equipo_Local']).trim()] || {};
+      const eqV = eqMap[String(p['Equipo_Visita']).trim()] || {};
+      const nomL = (eqL['Nombre'] || `Equipo ${p['Equipo_Local']}`).toUpperCase();
+      const nomV = (eqV['Nombre'] || `Equipo ${p['Equipo_Visita']}`).toUpperCase();
+      const urlL = eqL['URL'] || '';
+      const urlV = eqV['URL'] || '';
       const logoL = urlL ? `<img src="${urlL}" onerror="this.style.display='none'" style="width:100%;height:100%;object-fit:cover;">` : phSVG();
       const logoV = urlV ? `<img src="${urlV}" onerror="this.style.display='none'" style="width:100%;height:100%;object-fit:cover;">` : phSVG();
-      const gL = p.Goles_Local !== '' ? p.Goles_Local : '-';
-      const gV = p.Goles_Visita !== '' ? p.Goles_Visita : '-';
-      const ganPor = (p.Ganado_Por || '').toUpperCase().trim();
-      const hora = formatHora(p.Hora);
-      const jornada = p.Jornada ? `Jornada ${p.Jornada}` : '';
-      const cancha2 = p.Cancha || '';
-      const fecha2 = p.Fecha || '';
+      const gL = p['Goles_Local'] !== '' ? p['Goles_Local'] : '-';
+      const gV = p['Goles_Visita'] !== '' ? p['Goles_Visita'] : '-';
+      const ganPor = (p['Ganado_Por'] || '').trim().toUpperCase();
+      const hora = formatHora(p['Hora']);
+      const jornada = p['Jornada'] ? `Jornada ${p['Jornada']}` : '';
+      const cancha2 = p['Cancha'] || '';
+      const fecha2 = p['Fecha'] || '';
 
       cont.innerHTML += `
       <div class="enc-row">
@@ -154,10 +171,9 @@ async function cargarDatos() {
     });
 
     statusEl.textContent = `✅ ${filtrados.length} partido(s) cargado(s)`;
-    
-  } catch (err) {
-    console.error(err);
-    statusEl.textContent = '❌ Error: ' + err.message;
+
+  } catch(e) {
+    statusEl.textContent = '❌ Error: ' + e.message;
   }
 }
 
@@ -169,37 +185,25 @@ async function downloadPNG() {
   btn.disabled = true;
   const imgs = document.getElementById('flyerRoot').querySelectorAll('img');
   await Promise.all(Array.from(imgs).map(img => new Promise(resolve => {
-    if(img.complete) resolve();
-    else { img.onload = resolve; img.onerror = resolve; }
+    if (img.complete) resolve(); else { img.onload = resolve; img.onerror = resolve; }
   })));
   await new Promise(r => setTimeout(r, 800));
   try {
     const canvas = await html2canvas(document.getElementById('flyerRoot'), {
-      useCORS: true,
-      allowTaint: true,
-      scale: 2,
-      width: 900,
-      height: 1270,
-      backgroundColor: '#000',
-      imageTimeout: 20000,
-      logging: false
+      useCORS: true, allowTaint: true, scale: 2,
+      width: 900, height: 1270, backgroundColor: '#000', imageTimeout: 20000, logging: false
     });
     canvas.toBlob(blob => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
-      a.download = 'dominical.png';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      a.href = url; a.download = 'dominical.png';
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
     }, 'image/png');
-  } catch(e) {
-    alert('❌ Error: ' + e.message);
-  }
+  } catch(e) { alert('❌ Error: ' + e.message); }
   panel.style.display = 'block';
   btn.textContent = '⬇ Descargar Flyer como PNG';
   btn.disabled = false;
 }
 
-window.addEventListener('DOMContentLoaded', cargarFechasYEquipos);
+cargarFechasYEquipos();
