@@ -39,7 +39,6 @@ body {
   letter-spacing: 3px; padding: 12px 20px; text-transform: uppercase; width: 100%; margin-top: 10px;
 }
 
-
 .flyer-wrapper {
   position: relative;
   width: 100%;
@@ -49,7 +48,6 @@ body {
   border-radius: 8px;
   box-shadow: 0 0 60px rgba(0,0,0,0.95);
 
-  /* Fondo con tu imagen */
   background-image: url('fondo.png');
   background-size: cover;
   background-position: center top;
@@ -177,8 +175,6 @@ body {
 
 .info-item span.icon { font-size: 14px; }
 .info-item span.val { font-weight: 700; color: #fff; }
-
-/* MEDIA QUERIES */
 
 @media (max-width: 600px) {
   .flyer-wrapper {
