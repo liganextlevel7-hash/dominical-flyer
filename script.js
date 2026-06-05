@@ -112,8 +112,7 @@ async function cargarDatos() {
       statusEl.textContent = '⚠️ Selecciona un tipo de filtro';
       return;
     }
-
-    // Mostrar datos
+    
     const eqMap = {};
     todosEquipos.forEach(e => { eqMap[String(e['ID_Equipo']).trim()] = e; });
 
