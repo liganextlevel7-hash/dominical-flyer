@@ -1,75 +1,98 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Dominical - Next Level 7</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dominical - Next Level 7</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
-<div class="editor-panel">
-  <h3>⚽ Dominical — Next Level 7</h3>
-  <div class="controls-row">
+  <div class="editor-panel">
+    <h3>⚽ Dominical — Next Level 7</h3>
+    <div class="controls-row">
 
-    <div class="field-group">
-      <label>Filtrar por</label>
-      <select id="filterTipo" onchange="cambiarFiltro()">
-        <option value="jornada">Por Jornada</option>
-        <option value="fecha">Por Fecha</option>
-        <option value="equipo">Por Equipo</option>
-      </select>
+      <!-- Selector principal: jornada, fecha o equipo -->
+      <div class="field-group">
+        <label>Filtrar por</label>
+        <select id="filterTipo" onchange="cambiarFiltro()">
+          <option value="jornada">Por Jornada</option>
+          <option value="fecha">Por Fecha</option>
+          <option value="equipo">Por Equipo</option>
+        </select>
+      </div>
+
+      <!-- Selector jornada -->
+      <div class="field-group" id="groupJornada">
+        <label>Jornada</label>
+        <select id="filterJornada">
+          <option value="">— Selecciona —</option>
+          <option value="1">Jornada 1</option>
+          <option value="2">Jornada 2</option>
+          <option value="3">Jornada 3</option>
+          <option value="4">Jornada 4</option>
+          <option value="5">Jornada 5</option>
+          <option value="6">Jornada 6</option>
+          <option value="7">Jornada 7</option>
+          <option value="8">Jornada 8</option>
+        </select>
+      </div>
+
+      <!-- Selector fecha -->
+      <div class="field-group" id="groupFecha" style="display:none">
+        <label>Fecha</label>
+        <select id="filterFecha"><option value="">— Cargando... —</option></select>
+      </div>
+      
+      <!-- Nuevo Selector equipo -->
+      <div class="field-group" id="groupEquipo" style="display:none">
+        <label>Equipo</label>
+        <select id="filterEquipo"><option value="">— Cargando... —</option></select>
+      </div>
+
+      <!-- Botón cargar datos -->
+      <div class="field-group">
+        <label>&nbsp;</label>
+        <button class="load-btn" onclick="cargarDatos()">🔄 Cargar Datos</button>
+      </div>
     </div>
 
-    <div class="field-group" id="groupJornada">
-      <label>Jornada</label>
-      <select id="filterJornada">
-        <option value="">— Selecciona —</option>
-        <option value="1">Jornada 1</option>
-        <option value="2">Jornada 2</option>
-        <option value="3">Jornada 3</option>
-        <option value="4">Jornada 4</option>
-        <option value="5">Jornada 5</option>
-        <option value="6">Jornada 6</option>
-        <option value="7">Jornada 7</option>
-        <option value="8">Jornada 8</option>
-      </select>
-    </div>
-
-    <div class="field-group" id="groupFecha" style="display:none;">
-      <label>Fecha</label>
-      <select id="filterFecha"><option value="">— Cargando... —</option></select>
-    </div>
-
-    <div class="field-group" id="groupEquipo" style="display:none;">
-      <label>Equipo</label>
-      <select id="filterEquipo"><option value="">— Cargando... —</option></select>
-    </div>
-
-    <div class="field-group">
-      <label>&nbsp;</label>
-      <button class="load-btn" onclick="cargarDatos()">🔄 Cargar Datos</button>
-    </div>
-
+    <div class="status-msg" id="statusMsg">Selecciona jornada, fecha o equipo y presiona Cargar Datos</div>
+    <button class="dl-btn" onclick="downloadPNG()" id="dlBtn">⬇ Descargar Flyer como PNG</button>
   </div>
-  <div class="status-msg" id="statusMsg">Selecciona filtro y presiona Cargar Datos</div>
-  <button class="dl-btn" onclick="downloadPNG()" id="dlBtn">⬇ Descargar Flyer como PNG</button>
-</div>
 
-<div class="flyer-wrapper" id="flyerRoot">
-  <div class="overlay-main"></div>
-  <div class="liga-banner">
-    <div class="jornada-title" id="jornadaDisplay">DOMINICAL</div>
-  </div>
-  <div class="encounters-container" id="encFlyer">
-    <div style="text-align:center;color:rgba(255,255,255,0.3);font-size:20px;letter-spacing:4px;padding:40px;">
-      CARGA LOS DATOS PARA VER LOS PARTIDOS
+  <!-- FLYER -->
+  <div class="flyer-wrapper" id="flyerRoot">
+    <img class="flyer-bg" id="flyerBg" src="" alt="bg" />
+    <div class="overlay-main"></div>
+    <div class="liga-banner">
+      <div class="jornada-title" id="jornadaDisplay">DOMINICAL</div>
+    </div>
+    <div class="encounters-container" id="encFlyer">
+      <div style="text-align:center;color:rgba(255,255,255,0.3);font-size:20px;letter-spacing:4px;padding:40px;">
+        CARGA LOS DATOS PARA VER LOS PARTIDOS
+      </div>
+    </div>
+    <div class="footer-info">
+      <div class="footer-left">
+        <div class="footer-item">
+          <div class="footer-label">📅 Fecha</div>
+          <div class="footer-value" id="fechaDisplay">—</div>
+        </div>
+        <div class="footer-item">
+          <div class="footer-label">🏆 Torneo</div>
+          <div class="footer-value green">LIGA VARONIL LIBRE</div>
+        </div>
+      </div>
+      <div class="footer-item" style="align-items:flex-start;">
+        <div class="footer-label">📍 Cancha</div>
+        <div class="footer-value green" id="canchaDisplay">NEXT LEVEL 7</div>
+      </div>
     </div>
   </div>
-</div>
 
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
