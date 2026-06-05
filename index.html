@@ -14,7 +14,7 @@
     <h3>⚽ Dominical — Next Level 7</h3>
     <div class="controls-row">
 
-      <!-- Selector principal: jornada, fecha o equipo -->
+      <!-- Selector principal -->
       <div class="field-group">
         <label>Filtrar por</label>
         <select id="filterTipo" onchange="cambiarFiltro()">
@@ -46,26 +46,24 @@
         <select id="filterFecha"><option value="">— Cargando... —</option></select>
       </div>
       
-      <!-- Nuevo Selector equipo -->
+      <!-- Selector equipo -->
       <div class="field-group" id="groupEquipo" style="display:none">
         <label>Equipo</label>
         <select id="filterEquipo"><option value="">— Cargando... —</option></select>
       </div>
 
-      <!-- Botón cargar datos -->
       <div class="field-group">
         <label>&nbsp;</label>
         <button class="load-btn" onclick="cargarDatos()">🔄 Cargar Datos</button>
       </div>
     </div>
 
-    <div class="status-msg" id="statusMsg">Selecciona jornada, fecha o equipo y presiona Cargar Datos</div>
+    <div class="status-msg" id="statusMsg">Selecciona filtro y presiona Cargar Datos</div>
     <button class="dl-btn" onclick="downloadPNG()" id="dlBtn">⬇ Descargar Flyer como PNG</button>
   </div>
 
   <!-- FLYER -->
   <div class="flyer-wrapper" id="flyerRoot">
-    <img class="flyer-bg" id="flyerBg" src="" alt="bg" />
     <div class="overlay-main"></div>
     <div class="liga-banner">
       <div class="jornada-title" id="jornadaDisplay">DOMINICAL</div>
@@ -73,22 +71,6 @@
     <div class="encounters-container" id="encFlyer">
       <div style="text-align:center;color:rgba(255,255,255,0.3);font-size:20px;letter-spacing:4px;padding:40px;">
         CARGA LOS DATOS PARA VER LOS PARTIDOS
-      </div>
-    </div>
-    <div class="footer-info">
-      <div class="footer-left">
-        <div class="footer-item">
-          <div class="footer-label">📅 Fecha</div>
-          <div class="footer-value" id="fechaDisplay">—</div>
-        </div>
-        <div class="footer-item">
-          <div class="footer-label">🏆 Torneo</div>
-          <div class="footer-value green">LIGA VARONIL LIBRE</div>
-        </div>
-      </div>
-      <div class="footer-item" style="align-items:flex-start;">
-        <div class="footer-label">📍 Cancha</div>
-        <div class="footer-value green" id="canchaDisplay">NEXT LEVEL 7</div>
       </div>
     </div>
   </div>
