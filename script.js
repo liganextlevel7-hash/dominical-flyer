@@ -45,8 +45,6 @@ function cambiarFiltro() {
   document.getElementById('statusMsg').textContent = 'Selecciona opción y presiona Cargar Datos';
   document.getElementById('encFlyer').innerHTML = '';
   document.getElementById('jornadaDisplay').textContent = 'DOMINICAL';
-  document.getElementById('canchaDisplay').textContent = 'NEXT LEVEL 7';
-  document.getElementById('fechaDisplay').textContent = '—';
 }
 
 async function cargarFechasYEquipos() {
@@ -69,7 +67,6 @@ async function cargarFechasYEquipos() {
     Array.from(equiposSet).sort().forEach(eq => selEquipo.innerHTML += `<option value="${eq}">${eq}</option>`);
 
     document.getElementById('statusMsg').textContent = 'Selecciona filtro y presiona Cargar Datos';
-    
   } catch(e) {
     console.error(e);
     document.getElementById('statusMsg').textContent = '❌ Error: ' + e.message;
@@ -119,8 +116,9 @@ async function cargarDatos() {
     const cancha = filtrados[0]['Cancha'] || 'NEXT LEVEL 7';
     const fecha = filtrados[0]['Fecha'] || '—';
 
-    document.getElementById('canchaDisplay').textContent = cancha.toUpperCase();
-    document.getElementById('fechaDisplay').textContent = fecha;
+    // Opcional: puedes quitar las líneas si no quieres mostrar estos datos en el pie, o comentarlas
+    // document.getElementById('canchaDisplay').textContent = cancha.toUpperCase();
+    // document.getElementById('fechaDisplay').textContent = fecha;
 
     const cont = document.getElementById('encFlyer');
     cont.innerHTML = '';
@@ -143,29 +141,30 @@ async function cargarDatos() {
       const fecha2 = p['Fecha'] || '';
 
       cont.innerHTML += `
-      <div class="enc-row">
-        <div class="teams-section">
-          <div class="team-block">
-            <div class="team-logo-sm">${logoL}</div>
-            <div class="team-name-sm">${nomL}</div>
+        <div class="enc-row">
+          <div class="teams-section">
+            <div class="team-block">
+              <div class="team-logo-sm">${logoL}</div>
+              <div class="team-name-sm">${nomL}</div>
+            </div>
+            <div class="score-block">
+              <div class="score-nums">${gL} - ${gV}</div>
+              ${ganPor ? `<div class="ganado-badge">${ganPor}</div>` : ''}
+            </div>
+            <div class="team-block">
+              <div class="team-logo-sm">${logoV}</div>
+              <div class="team-name-sm">${nomV}</div>
+            </div>
           </div>
-          <div class="score-block">
-            <div class="score-nums">${gL} - ${gV}</div>
-            ${ganPor ? `<div class="ganado-badge">${ganPor}</div>` : ''}
-          </div>
-          <div class="team-block">
-            <div class="team-logo-sm">${logoV}</div>
-            <div class="team-name-sm">${nomV}</div>
+          <div class="enc-divider-v"></div>
+          <div class="info-section">
+            ${jornada ? `<div class="info-item"><span class="icon">🏆</span><span class="val">${jornada}</span></div>` : ''}
+            ${cancha2 ? `<div class="info-item"><span class="icon">📍</span><span class="val">${cancha2}</span></div>` : ''}
+            ${fecha2 ? `<div class="info-item"><span class="icon">📅</span><span class="val">${fecha2}</span></div>` : ''}
+            ${hora ? `<div class="info-item"><span class="icon">⏰</span><span class="val">${hora}</span></div>` : ''}
           </div>
         </div>
-        <div class="enc-divider-v"></div>
-        <div class="info-section">
-          ${jornada ? `<div class="info-item"><span class="icon">🏆</span><span class="val">${jornada}</span></div>` : ''}
-          ${cancha2 ? `<div class="info-item"><span class="icon">📍</span><span class="val">${cancha2}</span></div>` : ''}
-          ${fecha2 ? `<div class="info-item"><span class="icon">📅</span><span class="val">${fecha2}</span></div>` : ''}
-          ${hora ? `<div class="info-item"><span class="icon">⏰</span><span class="val">${hora}</span></div>` : ''}
-        </div>
-      </div>`;
+      `;
     });
 
     statusEl.textContent = `✅ ${filtrados.length} partido(s) cargado(s)`;
@@ -205,6 +204,4 @@ async function downloadPNG() {
   btn.disabled = false;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  cargarFechasYEquipos();
-});
+window.addEventListener('DOMContentLoaded', cargarFechasYEquipos);
