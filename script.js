@@ -123,6 +123,7 @@ async function cargarDatos() {
       const gL = p['Goles_Local'] !== '' ? p['Goles_Local'] : '-';
       const gV = p['Goles_Visita'] !== '' ? p['Goles_Visita'] : '-';
       const ganPor = (p['Ganado_Por'] || '').trim().toUpperCase();
+      const ganPorClass = ganPor.toLowerCase();
       const hora = formatHora(p['Hora']);
       const jornada = p['Jornada'] ? `Jornada ${p['Jornada']}` : '';
       const cancha2 = p['Cancha'] || '';
@@ -137,7 +138,6 @@ async function cargarDatos() {
           </div>
           <div class="score-block">
             <div class="score-nums">${gL} - ${gV}</div>
-            ${ganPor ? `<div class="ganado-badge">${ganPor}</div>` : ''}
           </div>
           <div class="team-block">
             <div class="team-logo-sm">${logoV}</div>
@@ -146,10 +146,15 @@ async function cargarDatos() {
         </div>
         <div class="enc-divider-v"></div>
         <div class="info-section">
-          ${jornada ? `<div class="info-item"><span class="icon">🏆</span><span class="val">${jornada}</span></div>` : ''}
-          ${cancha2 ? `<div class="info-item"><span class="icon">📍</span><span class="val">${cancha2}</span></div>` : ''}
-          ${fecha2 ? `<div class="info-item"><span class="icon">📅</span><span class="val">${fecha2}</span></div>` : ''}
-          ${hora ? `<div class="info-item"><span class="icon">⏰</span><span class="val">${hora}</span></div>` : ''}
+          <div class="info-col">
+            ${jornada ? `<div class="info-item"><span class="icon">🏆</span><span class="val">${jornada}</span></div>` : ''}
+            ${cancha2 ? `<div class="info-item"><span class="icon">📍</span><span class="val">${cancha2}</span></div>` : ''}
+          </div>
+          <div class="info-col">
+            ${fecha2 ? `<div class="info-item"><span class="icon">📅</span><span class="val">${fecha2}</span></div>` : ''}
+            ${hora ? `<div class="info-item"><span class="icon">⏰</span><span class="val">${hora}</span></div>` : ''}
+          </div>
+          ${ganPor ? `<div class="ganado-badge ${ganPorClass}">${ganPor}</div>` : ''}
         </div>
       </div>`;
     });
@@ -193,7 +198,7 @@ async function downloadPNG() {
 function escalarFlyer() {
   const wrapper = document.getElementById('flyerRoot');
   const container = document.getElementById('flyerScaleContainer');
-const disponible = document.documentElement.clientWidth - 16;
+  const disponible = document.documentElement.clientWidth - 16;
   const escala = disponible < 900 ? disponible / 900 : 1;
   wrapper.style.transform = `scale(${escala})`;
   wrapper.style.transformOrigin = 'top left';
