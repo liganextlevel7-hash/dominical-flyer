@@ -47,9 +47,7 @@ function cambiarFiltro() {
   document.getElementById('statusMsg').textContent = 'Selecciona opción y presiona Cargar Datos';
   document.getElementById('encFlyer').innerHTML = '';
   document.getElementById('jornadaDisplay').textContent = 'DOMINICAL';
-  document.getElementById('canchaDisplay').textContent = 'NEXT LEVEL 7';
-  document.getElementById('fechaDisplay').textContent = '—';
-}
+ }
 
 async function cargarFechasYEquipos() {
   try {
