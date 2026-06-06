@@ -151,7 +151,7 @@ body {
 .enc-divider-v {
   width: 2px;
   height: 80px;
-  background: linear-gradient(to bottom, transparent, rgba(184,240,48,0.4), transparent);
+  background: linear-gradient(to bottom, transparent, rgba(184,240,48,0.6), transparent);
   flex-shrink: 0;
 }
 
@@ -160,26 +160,33 @@ body {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 14px;
+  justify-content: center;
+  gap: 0;
 }
 
 .info-col {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  padding: 0 16px;
+  border-right: 2px solid rgba(184,240,48,0.4);
+}
+
+.info-col:last-of-type {
+  border-right: 2px solid rgba(184,240,48,0.4);
 }
 
 .info-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-family: 'Roboto', sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   color: #ccc;
 }
 
-.info-item span.icon { font-size: 15px; }
-.info-item span.val { font-weight: 700; color: #fff; font-size: 14px; }
+.info-item span.icon { font-size: 17px; }
+.info-item span.val { font-weight: 700; color: #fff; font-size: 16px; }
 
 /* ===== GANADO BADGE ===== */
 .ganado-badge {
@@ -191,6 +198,7 @@ body {
   border-radius: 8px;
   text-align: center;
   line-height: 1;
+  margin-left: 16px;
 }
 
 .ganado-badge.normal  { color: #b8f030; border: 2px solid #b8f030; text-shadow: 0 0 10px rgba(184,240,48,0.4); }
