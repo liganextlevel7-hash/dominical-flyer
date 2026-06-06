@@ -198,6 +198,8 @@ function escalarFlyer() {
   wrapper.style.transform = `scale(${escala})`;
   wrapper.style.transformOrigin = 'top left';
   container.style.height = Math.round(1270 * escala) + 'px';
+  container.style.width = Math.round(900 * escala) + 'px';
+  container.style.overflow = 'hidden';
 }
 
 escalarFlyer();
