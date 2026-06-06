@@ -193,7 +193,7 @@ async function downloadPNG() {
 function escalarFlyer() {
   const wrapper = document.getElementById('flyerRoot');
   const container = document.getElementById('flyerScaleContainer');
-  const disponible = window.innerWidth - 16;
+const disponible = document.documentElement.clientWidth - 16;
   const escala = disponible < 900 ? disponible / 900 : 1;
   wrapper.style.transform = `scale(${escala})`;
   wrapper.style.transformOrigin = 'top left';
