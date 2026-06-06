@@ -122,9 +122,7 @@ async function cargarDatos() {
     const cancha = filtrados[0]['Cancha'] || 'NEXT LEVEL 7';
     const fecha = filtrados[0]['Fecha'] || '—';
 
-    document.getElementById('canchaDisplay').textContent = cancha.toUpperCase();
-    document.getElementById('fechaDisplay').textContent = fecha;
-
+   
     const cont = document.getElementById('encFlyer');
     cont.innerHTML = '';
 
